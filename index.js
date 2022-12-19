@@ -56,21 +56,19 @@ const viewDepartments = () => {
   db.query(selectDepartment, (err, rows) => {
     if (err) throw err;
     console.table(rows);
-    console.log(rows,"rows array style");
-    for (var i = 0; i < rows.length; i++){
-      console.log(rows.department_name, "department names");
+    for (let i = 0; i < rows.length; i++) {
+      let departmentNames = rows[i].department_name;
+      console.log(departmentNames);
     }
     inquirerQuestions();
   });
 };
-
 
 const viewRoles = () => {
   db.query(selectRole, (err, rows) => {
     if (err) throw err;
     console.table(rows);
     inquirerQuestions();
-       
   });
 };
 
@@ -79,7 +77,6 @@ const viewEmployees = () => {
     if (err) throw err;
     console.table(rows);
     inquirerQuestions();
-
   });
 };
 
@@ -104,45 +101,49 @@ const addDepartment = () => {
   });
 };
 
-
 const addRole = () => {
-  console.log(selectDepartment);
-  const addRoleToDept = () => {
+  db.query(selectDepartment, (err, rows) => {
+    for (var i = 0; i < rows.length; i++) {
+      var departmentNames = rows[i].department_name;
+      console.log(departmentNames);
+      return departmentNames;
+    }
     const deptQuestion = [
       {
         type: "list",
         message: "Which department would you like to add a role to?",
         name: "roleDepartment",
-        choices: ["Engineering", "HR", "Finance", "Sales", "Legal"],
+        choices: `${departmentNames}`,
       },
     ];
-    
-  };
-  const roleQuestion = [
-
-    {
-      type: "input",
-      message: "What role would you like to add?",
-      name: "roleTitle",
-    },
-    {
-      type: "input",
-      message: "What is this role's salary?",
-      name: "roleSalary",
-    },
-  ];
-  inquirer.prompt(roleQuestion).then((answers) => {
-    const sql = `
-    INSERT INTO role (department_id, title, salary)
-    VALUES (?)
-    `;
-    db.query(
-      sql,
-      [answers.roleDepartment, answers.roleTitle, answers.roleSalary],
-      (err, rows) => {
-        viewRoles();
-      }
-    );
+    roleInfo();
+    const roleInfo = () => {
+      const roleQuestion = [
+        {
+          type: "input",
+          message: "What role would you like to add?",
+          name: "roleTitle",
+        },
+        {
+          type: "input",
+          message: "What is this role's salary?",
+          name: "roleSalary",
+        },
+      ];
+      inquirer.prompt(deptQuestion, roleQuestion).then((answers) => {
+        const sql = `
+        INSERT INTO role (department_id, title, salary)
+        VALUES (?)
+        `;
+        db.query(
+          sql,
+          [answers.roleDepartment, answers.roleTitle, answers.roleSalary],
+          (err, rows) => {
+            viewRoles();
+          }
+        );
+      });
+    };
   });
 };
 
