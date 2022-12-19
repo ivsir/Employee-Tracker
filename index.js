@@ -3,7 +3,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 require("console.table");
 // Connect to database
-const departmentsList = []
+const departmentsList = [];
 const db = mysql.createConnection(
   {
     host: "localhost",
@@ -52,6 +52,48 @@ LEFT JOIN
 LEFT JOIN
   employee manager on manager.id = employee.manager_id;
 `;
+
+const inquirerQuestions = () => {
+  const questions = [
+    {
+      type: "list",
+      message: "what would you like to do?",
+      name: "promptChoices",
+      choices: [
+        "view all departments",
+        "view all roles",
+        "view all employees",
+        "add a department",
+        "add a role",
+        "add an employee",
+        "update an employee role",
+      ],
+    },
+  ];
+  inquirer.prompt(questions).then((answers) => {
+    if (answers.promptChoices === "view all departments") {
+      viewDepartments();
+    }
+    if (answers.promptChoices === "view all roles") {
+      viewRoles();
+    }
+    if (answers.promptChoices === "view all employees") {
+      viewEmployees();
+    }
+    if (answers.promptChoices === "add a department") {
+      addDepartment();
+    }
+    if (answers.promptChoices === "add a role") {
+      addRole();
+    }
+    if (answers.promptChoices === "add an employee") {
+      addEmployee();
+    }
+    if (answers.promptChoices === "update an employee role") {
+      updateEmployeeRole();
+    }
+  });
+};
 
 const viewDepartments = () => {
   db.query(selectDepartment, (err, rows) => {
@@ -105,8 +147,10 @@ const addDepartment = () => {
 const addRole = () => {
   db.query(selectDepartment, (err, rows) => {
     let deptNamesArray = [];
-    rows.forEach((department) => {deptNamesArray.push(department.department_name);});
-    deptNamesArray.push('Create Department');
+    rows.forEach((department) => {
+      deptNamesArray.push(department.department_name);
+    });
+    deptNamesArray.push("Create Department");
     const deptQuestion = [
       {
         type: "list",
@@ -116,7 +160,7 @@ const addRole = () => {
       },
     ];
     inquirer.prompt(deptQuestion).then((answers) => {
-      if (answers.roleDepartment === 'Create Department') {
+      if (answers.roleDepartment === "Create Department") {
         this.addDepartment();
       } else {
         roleInfo(answers);
@@ -137,181 +181,28 @@ const addRole = () => {
       ];
       inquirer.prompt(roleQuestion).then((answers) => {
         let departmentId;
-        let role = deptRoleData.roleTitle;
-        let salary = deptRoleData.roleSalary;
         rows.forEach((department) => {
           if (deptRoleData.roleDepartment === department.department_name) {
             departmentId = department.id;
-            console.log(departmentId);
           }
-        })
+        });
         const sql = `
         INSERT INTO role (department_id, title, salary)
-        VALUES (?)
+        VALUES (?,?,?)
         `;
-        db.query(
-          sql,
-          [departmentId, role, salary],
-          (err, rows) => {
-            if (err) throw err;
-            viewRoles();
-          }
-        );
+        db.query(sql, [departmentId, answers.roleTitle, answers.roleSalary], (err, rows) => {
+          if (err) throw err;
+          viewRoles();
+        });
       });
     };
   });
 };
 
-const addEmployee = () => {};
+const addEmployee = () => {
+  db.query(selectEmployee,(err,rows) => {
+  })
+};
 
 const updateEmployeeRole = () => {};
 
-const inquirerQuestions = () => {
-  const questions = [
-    {
-      type: "list",
-      message: "what would you like to do?",
-      name: "promptChoices",
-      choices: [
-        "view all departments",
-        "view all roles",
-        "view all employees",
-        "add a department",
-        "add a role",
-        "add an employee",
-        "update an employee role",
-      ],
-    },
-  ];
-  inquirer.prompt(questions).then((answers) => {
-    if (answers.promptChoices === "view all departments") {
-      viewDepartments();
-    }
-    if (answers.promptChoices === "view all roles") {
-      viewRoles();
-    }
-    if (answers.promptChoices === "view all employees") {
-      viewEmployees();
-    }
-    if (answers.promptChoices === "add a department") {
-      addDepartment();
-    }
-    if (answers.promptChoices === "add a role") {
-      addRole();
-    }
-    if (answers.promptChoices === "add an employee") {
-      addEmployee();
-    }
-    if (answers.promptChoices === "update an employee role") {
-      updateEmployeeRole();
-    }
-  });
-};
-
-// // Read all departments
-// app.get('/api/department', (req, res) => {
-//   const sql = `SELECT
-//   employee.id,
-//   employee.first_name,
-//   employee.last_name,
-//   role.title,
-//   department.department_name AS department,
-//   role.salary,
-//   CONCAT(manager.first_name, ' ', manager.last_name) AS manager
-// FROM
-//   employee
-// LEFT JOIN
-//   role ON employee.role_id = role.id
-// LEFT JOIN
-//   department on role.department_id = department.id
-// LEFT JOIN
-//   employee manager on manager.id = employee.manager_id;`;
-
-//   db.query(sql, (err, rows) => {
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//        return;
-//     }
-//     res.json({
-//       message: 'success',
-//       data: rows
-//     });
-//   });
-// });
-
-// // Create a movie
-// app.post('/api/new-department', ({ body }, res) => {
-//   const sql = `INSERT INTO role (department_id, title, salary)
-//     VALUES (?)`;
-//   const params = [body.movie_name];
-
-//   db.query(sql, params, (err, result) => {
-//     if (err) {
-//       res.status(400).json({ error: err.message });
-//       return;
-//     }
-//     res.json({
-//       message: 'success',
-//       data: body
-//     });
-//   });
-// });
-
-// Delete a movie
-// app.delete('/api/movie/:id', (req, res) => {
-//   const sql = `DELETE FROM movies WHERE id = ?`;
-//   const params = [req.params.id];
-
-//   db.query(sql, params, (err, result) => {
-//     if (err) {
-//       res.statusMessage(400).json({ error: res.message });
-//     } else if (!result.affectedRows) {
-//       res.json({
-//       message: 'Movie not found'
-//       });
-//     } else {
-//       res.json({
-//         message: 'deleted',
-//         changes: result.affectedRows,
-//         id: req.params.id
-//       });
-//     }
-//   });
-// });
-
-// Read list of all reviews and associated movie name using LEFT JOIN
-// app.get('/api/movie-reviews', (req, res) => {
-//   const sql = `SELECT movies.movie_name AS movie, reviews.review FROM reviews LEFT JOIN movies ON reviews.movie_id = movies.id ORDER BY movies.movie_name;`;
-//   db.query(sql, (err, rows) => {
-//     if (err) {
-//       res.status(500).json({ error: err.message });
-//       return;
-//     }
-//     res.json({
-//       message: 'success',
-//       data: rows
-//     });
-//   });
-// });
-
-// BONUS: Update review name
-// app.put('/api/review/:id', (req, res) => {
-//   const sql = `UPDATE reviews SET review = ? WHERE id = ?`;
-//   const params = [req.body.review, req.params.id];
-
-//   db.query(sql, params, (err, result) => {
-//     if (err) {
-//       res.status(400).json({ error: err.message });
-//     } else if (!result.affectedRows) {
-//       res.json({
-//         message: 'Movie not found'
-//       });
-//     } else {
-//       res.json({
-//         message: 'success',
-//         data: req.body,
-//         changes: result.affectedRows
-//       });
-//     }
-//   });
-// });
