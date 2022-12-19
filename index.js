@@ -3,6 +3,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 require("console.table");
 // Connect to database
+const departmentsList = []
 const db = mysql.createConnection(
   {
     host: "localhost",
@@ -103,21 +104,25 @@ const addDepartment = () => {
 
 const addRole = () => {
   db.query(selectDepartment, (err, rows) => {
-    for (var i = 0; i < rows.length; i++) {
-      var departmentNames = rows[i].department_name;
-      console.log(departmentNames);
-      return departmentNames;
-    }
+    let deptNamesArray = [];
+    rows.forEach((department) => {deptNamesArray.push(department.department_name);});
+    deptNamesArray.push('Create Department');
     const deptQuestion = [
       {
         type: "list",
         message: "Which department would you like to add a role to?",
         name: "roleDepartment",
-        choices: `${departmentNames}`,
+        choices: deptNamesArray,
       },
     ];
-    roleInfo();
-    const roleInfo = () => {
+    inquirer.prompt(deptQuestion).then((answers) => {
+      if (answers.roleDepartment === 'Create Department') {
+        this.addDepartment();
+      } else {
+        roleInfo(answers);
+      }
+    });
+    const roleInfo = (deptRoleData) => {
       const roleQuestion = [
         {
           type: "input",
@@ -130,15 +135,25 @@ const addRole = () => {
           name: "roleSalary",
         },
       ];
-      inquirer.prompt(deptQuestion, roleQuestion).then((answers) => {
+      inquirer.prompt(roleQuestion).then((answers) => {
+        let departmentId;
+        let role = deptRoleData.roleTitle;
+        let salary = deptRoleData.roleSalary;
+        rows.forEach((department) => {
+          if (deptRoleData.roleDepartment === department.department_name) {
+            departmentId = department.id;
+            console.log(departmentId);
+          }
+        })
         const sql = `
         INSERT INTO role (department_id, title, salary)
         VALUES (?)
         `;
         db.query(
           sql,
-          [answers.roleDepartment, answers.roleTitle, answers.roleSalary],
+          [departmentId, role, salary],
           (err, rows) => {
+            if (err) throw err;
             viewRoles();
           }
         );
