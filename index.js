@@ -233,7 +233,16 @@ const addEmployee = () => {
         name: "employeeManager",
       },
     ]
+
+    inquirer.prompt(employeeQuestions).then((answers) => {
+      const sql = `INSERT INTO employee (role_id, first_name,last_name, manager_id)
+      VALUES (?,?,?,?)`
+      db.query(sql,[answers.firstName, answers.lastName, 
+      ])
+
+    });
   })
+
 };
 
 const updateEmployeeRole = () => {};
