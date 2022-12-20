@@ -53,6 +53,7 @@ LEFT JOIN
   employee manager on manager.id = employee.manager_id;
 `;
 
+
 const inquirerQuestions = () => {
   const questions = [
     {
@@ -123,6 +124,7 @@ const viewEmployees = () => {
   });
 };
 
+
 const addDepartment = () => {
   const departmentQuestion = [
     {
@@ -161,7 +163,7 @@ const addRole = () => {
     ];
     inquirer.prompt(deptQuestion).then((answers) => {
       if (answers.roleDepartment === "Create Department") {
-        this.addDepartment();
+        addDepartment();
       } else {
         roleInfo(answers);
       }
@@ -199,8 +201,38 @@ const addRole = () => {
   });
 };
 
+
+
 const addEmployee = () => {
+  
   db.query(selectEmployee,(err,rows) => {
+    let rolesArray = [];
+    rows.forEach((role) => {
+      rolesArray.push(role.title);
+    });
+    rolesArray.push("Create a new role");
+    const employeeQuestions = [
+      {
+        type: "input",
+        message: "What is the employee's first name?",
+        name: "firstName",
+      },
+      {
+        type: "input",
+        message: "What is the employee's last name?",
+        name: "lastName",
+      },
+      {
+        type: "choices",
+        message: "What is the employee's role?",
+        name: rolesArray,
+      },
+      {
+        type: "choices",
+        message: "Who is the employee's manager?",
+        name: "employeeManager",
+      },
+    ]
   })
 };
 
