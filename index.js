@@ -166,7 +166,7 @@ const addRole = () => {
         roleInfo(answers);
       }
     });
-    const roleInfo = (deptRoleData) => {
+    const roleInfo = (chosenDepartment) => {
       const roleQuestion = [
         {
           type: "input",
@@ -182,7 +182,7 @@ const addRole = () => {
       inquirer.prompt(roleQuestion).then((answers) => {
         let departmentId;
         rows.forEach((department) => {
-          if (deptRoleData.roleDepartment === department.department_name) {
+          if (chosenDepartment.roleDepartment === department.department_name) {
             departmentId = department.id;
           }
         });
@@ -227,8 +227,8 @@ const addEmployee = () => {
         employeeInfo(answers);
       }
     });
-    
-    const employeeInfo = (employeeData) => {
+
+    const employeeInfo = (chosenRole) => {
       const employeeQuestions = [
         {
           type: "input",
@@ -248,25 +248,26 @@ const addEmployee = () => {
         },
       ];
       inquirer.prompt(employeeQuestions).then((answers) => {
-        let employeeId;
+        let roleId;
         rows.forEach((role) => {
-          if (employeeData.employeeRole === role.title) {
-            roleId = role.id;
+          if (chosenRole.employeeRole === role.title) {
+            roleId = role.role_id;
           }
+          console.log(role.title)
         });
         const sql = `INSERT INTO employee (role_id, first_name, last_name, manager_id)
       VALUES (?,?,?,?)`;
         db.query(
           sql,
           [
-            employeeId,
+            roleId,
             answers.firstName,
             answers.lastName,
             answers.employeeManager,
           ],
           (err, rows) => {
             if (err) throw err;
-            viewRoles();
+            viewEmployees();
           }
         );
       });
