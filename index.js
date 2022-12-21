@@ -204,12 +204,26 @@ const addRole = () => {
 };
 
 const addEmployee = () => {
-  db.query(selectEmployee, (err, rows) => {
+  db.query(selectRole, (err, rows) => {
     let roleArray = [];
     rows.forEach((role) => {
-      roleArray.push(role.title);
+      roleArray.push({
+        name: role.title,
+        value: role.role_id,
+      });
     });
     roleArray.push("Create a new role");
+
+    let managersArray = [];
+    db.query(selectEmployee, (err, rows) => {
+      rows.forEach((employee) => {
+        managersArray.push({
+          name: employee.manager,
+          value: employee.manager_id,
+        });
+      });
+    });
+    console.log(managersArray);
 
     const employeeRoleQuestion = [
       {
@@ -220,15 +234,15 @@ const addEmployee = () => {
       },
     ];
 
-    inquirer.prompt(employeeRoleQuestion).then((answers) => {
-      if (answers.employeeRole === "Create a new role") {
+    inquirer.prompt(employeeRoleQuestion).then((answer) => {
+      if (answer.employeeRole === "Create a new role") {
         addRole();
       } else {
-        employeeInfo(answers);
+        employeeInfo(answer);
       }
     });
 
-    const employeeInfo = (chosenRole) => {
+    const employeeInfo = (answer) => {
       const employeeQuestions = [
         {
           type: "input",
@@ -244,23 +258,17 @@ const addEmployee = () => {
           type: "list",
           message: "Who is the employee's manager?",
           name: "employeeManager",
-          choices: roleArray,
+          choices: managersArray,
         },
       ];
+      console.log(managersArray);
       inquirer.prompt(employeeQuestions).then((answers) => {
-        let roleId;
-        rows.forEach((role) => {
-          if (chosenRole.employeeRole === role.title) {
-            roleId = role.role_id;
-          }
-          console.log(role.title)
-        });
         const sql = `INSERT INTO employee (role_id, first_name, last_name, manager_id)
       VALUES (?,?,?,?)`;
         db.query(
           sql,
           [
-            roleId,
+            answer.employeeRole,
             answers.firstName,
             answers.lastName,
             answers.employeeManager,
