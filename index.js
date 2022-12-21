@@ -53,7 +53,6 @@ LEFT JOIN
   employee manager on manager.id = employee.manager_id;
 `;
 
-
 const inquirerQuestions = () => {
   const questions = [
     {
@@ -124,7 +123,6 @@ const viewEmployees = () => {
   });
 };
 
-
 const addDepartment = () => {
   const departmentQuestion = [
     {
@@ -192,58 +190,88 @@ const addRole = () => {
         INSERT INTO role (department_id, title, salary)
         VALUES (?,?,?)
         `;
-        db.query(sql, [departmentId, answers.roleTitle, answers.roleSalary], (err, rows) => {
-          if (err) throw err;
-          viewRoles();
-        });
+        db.query(
+          sql,
+          [departmentId, answers.roleTitle, answers.roleSalary],
+          (err, rows) => {
+            if (err) throw err;
+            viewRoles();
+          }
+        );
       });
     };
   });
 };
 
-
-
 const addEmployee = () => {
-  
-  db.query(selectEmployee,(err,rows) => {
-    let rolesArray = [];
+  db.query(selectEmployee, (err, rows) => {
+    let roleArray = [];
     rows.forEach((role) => {
-      rolesArray.push(role.title);
+      roleArray.push(role.title);
     });
-    rolesArray.push("Create a new role");
-    const employeeQuestions = [
+    roleArray.push("Create a new role");
+
+    const employeeRoleQuestion = [
       {
-        type: "input",
-        message: "What is the employee's first name?",
-        name: "firstName",
-      },
-      {
-        type: "input",
-        message: "What is the employee's last name?",
-        name: "lastName",
-      },
-      {
-        type: "choices",
+        type: "list",
         message: "What is the employee's role?",
-        name: rolesArray,
+        name: "employeeRole",
+        choices: roleArray,
       },
-      {
-        type: "choices",
-        message: "Who is the employee's manager?",
-        name: "employeeManager",
-      },
-    ]
+    ];
 
-    inquirer.prompt(employeeQuestions).then((answers) => {
-      const sql = `INSERT INTO employee (role_id, first_name,last_name, manager_id)
-      VALUES (?,?,?,?)`
-      db.query(sql,[answers.firstName, answers.lastName, 
-      ])
-
+    inquirer.prompt(employeeRoleQuestion).then((answers) => {
+      if (answers.employeeRole === "Create a new role") {
+        addRole();
+      } else {
+        employeeInfo(answers);
+      }
     });
-  })
-
+    
+    const employeeInfo = (employeeData) => {
+      const employeeQuestions = [
+        {
+          type: "input",
+          message: "What is the employee's first name?",
+          name: "firstName",
+        },
+        {
+          type: "input",
+          message: "What is the employee's last name?",
+          name: "lastName",
+        },
+        {
+          type: "list",
+          message: "Who is the employee's manager?",
+          name: "employeeManager",
+          choices: roleArray,
+        },
+      ];
+      inquirer.prompt(employeeQuestions).then((answers) => {
+        let employeeId;
+        rows.forEach((role) => {
+          if (employeeData.employeeRole === role.title) {
+            roleId = role.id;
+          }
+        });
+        const sql = `INSERT INTO employee (role_id, first_name, last_name, manager_id)
+      VALUES (?,?,?,?)`;
+        db.query(
+          sql,
+          [
+            employeeId,
+            answers.firstName,
+            answers.lastName,
+            answers.employeeManager,
+          ],
+          (err, rows) => {
+            if (err) throw err;
+            viewRoles();
+          }
+        );
+      });
+    };
+  });
 };
 
 const updateEmployeeRole = () => {};
-
