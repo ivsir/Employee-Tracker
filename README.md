@@ -19,7 +19,11 @@ Companies can create databases that stores departments, employees working in tho
 3) npm install mysql2
 
 ## Usage
-<img src="">
+
+
+https://user-images.githubusercontent.com/106352994/209063808-59a725bd-dfdd-43e2-95f9-eb43a5b94440.mp4
+
+
 
 ## Credits
 Risvi Tareq
