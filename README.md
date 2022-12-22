@@ -14,9 +14,7 @@ Companies can create databases that stores departments, employees working in tho
 </nav>
 
 ## Installation
-1) npm install console.table
-2) npm install inquirer8.2.4 
-3) npm install mysql2
+1) Run "npm install" in the terminal.
 
 ## Usage
 
