@@ -231,18 +231,17 @@ const addEmployee = () => {
       }
     });
 
-
     const employeeInfo = (answer) => {
       let managersArray = [];
       db.query(selectEmployee, (err, rows) => {
         rows.forEach((employee) => {
-            managersArray.push({
-              name: employee.first_name + " " + employee.last_name,
-              value: employee.employee_id,
-            });
+          managersArray.push({
+            name: employee.first_name + " " + employee.last_name,
+            value: employee.employee_id,
+          });
         });
       });
-  
+
       const employeeQuestions = [
         {
           type: "input",
@@ -284,30 +283,49 @@ const addEmployee = () => {
 };
 
 const updateEmployeeRole = () => {
-  db.query(selectEmployee, (err,rows) => {
+  db.query(selectEmployee, (err, rows) => {
     if (err) throw error;
-    let employeeNames = []
-    rows.forEach(employee) {
-      employeeNames.push(`${employee.first_name} ${employee.lastName}`)
-    }
-    console.log(employeeNames);
+    let employeeNames = [];
+    rows.forEach((employee) => {
+      employeeNames.push({
+        name: `${employee.first_name} ${employee.last_name}`,
+        value: employee.employee_id,
+      });
+    });
+
+    let employeeRoles = [];
+    rows.forEach((role) => {
+      employeeRoles.push({
+        name: role.title,
+        value: role.employee_id,
+      });
+    });
+
     const updateEmployee = [
       {
         type: "list",
         message: "Which employee's role do you want to update?",
         name: "updateEmployee",
-        choices: employeeNames
+        choices: employeeNames,
       },
       {
         type: "list",
         message: "Which role do you want to assign to the selected employee?",
         name: "updateRole",
-        choices: employeeNames
+        choices: employeeRoles,
       },
-    ]
+    ];
 
     inquirer.prompt(updateEmployee).then((answers) => {
-      console.log(answers);
-    })
-  })
+      sql = `UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`;
+      db.query(
+        sql,
+        [answers.updateRole, answers.updateEmployee],
+        (err, rows) => {
+          if (err) throw err;
+          viewEmployees();
+        }
+      );
+    });
+  });
 };
