@@ -261,7 +261,7 @@ const addEmployee = () => {
           choices: managersArray,
         },
       ];
-      
+
       inquirer.prompt(employeeQuestions).then((answers) => {
         const sql = `INSERT INTO employee (role_id, first_name, last_name, manager_id)
       VALUES (?,?,?,?)`;
@@ -283,4 +283,31 @@ const addEmployee = () => {
   });
 };
 
-const updateEmployeeRole = () => {};
+const updateEmployeeRole = () => {
+  db.query(selectEmployee, (err,rows) => {
+    if (err) throw error;
+    let employeeNames = []
+    rows.forEach(employee) {
+      employeeNames.push(`${employee.first_name} ${employee.lastName}`)
+    }
+    console.log(employeeNames);
+    const updateEmployee = [
+      {
+        type: "list",
+        message: "Which employee's role do you want to update?",
+        name: "updateEmployee",
+        choices: employeeNames
+      },
+      {
+        type: "list",
+        message: "Which role do you want to assign to the selected employee?",
+        name: "updateRole",
+        choices: employeeNames
+      },
+    ]
+
+    inquirer.prompt(updateEmployee).then((answers) => {
+      console.log(answers);
+    })
+  })
+};
