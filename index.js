@@ -214,9 +214,6 @@ const addEmployee = () => {
     });
     roleArray.push("Create a new role");
 
-
-
-
     const employeeRoleQuestion = [
       {
         type: "list",
@@ -239,10 +236,10 @@ const addEmployee = () => {
       let managersArray = [];
       db.query(selectEmployee, (err, rows) => {
         rows.forEach((employee) => {
-          managersArray.push({
-            name: employee.manager,
-            value: employee.manager_id,
-          });
+            managersArray.push({
+              name: employee.first_name + " " + employee.last_name,
+              value: employee.employee_id,
+            });
         });
       });
   
@@ -264,7 +261,7 @@ const addEmployee = () => {
           choices: managersArray,
         },
       ];
-      console.log(managersArray);
+      
       inquirer.prompt(employeeQuestions).then((answers) => {
         const sql = `INSERT INTO employee (role_id, first_name, last_name, manager_id)
       VALUES (?,?,?,?)`;
